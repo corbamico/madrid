@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Point the DC runtime at vendored copies instead of unpkg, so the page opens
+     offline straight from the filesystem. support.js reads window.__resources
+     (see cdnScriptFor) and falls back to the CDN for anything not listed here;
+     Babel is not mapped because this page's script is text/x-dc, not JSX. -->
+<script>
+window.__resources = {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "./js/react.production.min.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "./js/react-dom.production.min.js"
+};
+</script>
+<script src="./js/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Leaflet 1.9.4 vendored into ./js/ so the page works offline (no CDN, no server).
+     leaflet.css resolves its icons relative to itself: ./js/images/*.png -->
+<link rel="stylesheet" href="./js/leaflet.css">
+<script src="./js/leaflet.js"></script>
+<style>
+html{scroll-behavior:smooth}
+body{margin:0;background:#f6f1e8;color:#241d12;font-family:'Noto Sans SC',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#b1502f;text-decoration:none}
+a:hover{color:#8a3a20}
+.leaflet-container{font-family:'Noto Sans SC',sans-serif;background:#ece5d8}
+.leaflet-tooltip{font-family:'Noto Sans SC',sans-serif;font-weight:500}
+::selection{background:#b1502f;color:#fff}
+</style>
+</helmet>
+
+<div style="min-height:100vh">
+
+  <!-- ============ NAV ============ -->
+  <nav style="position:sticky;top:0;z-index:1200;background:rgba(246,241,232,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(36,29,18,.12)">
+    <div style="max-width:1180px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:28px;height:58px">
+      <a href="#top" style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:17px;color:#241d12;letter-spacing:1px">馬德里 · 指南</a>
+      <div style="flex:1"></div>
+      <div style="display:flex;gap:22px;font-size:13.5px;font-weight:500">
+        <a href="#sec-transport" style="color:#241d12">公共交通</a>
+        <a href="#sec-license" style="color:#241d12">考驾照</a>
+        <a href="#sec-map" style="color:#241d12">城镇 · 城市 · 徒步</a>
+        <a href="#sec-heritage" style="color:#241d12">文化遗产</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header id="top" style="max-width:1180px;margin:0 auto;padding:64px 28px 30px">
+    <div style="display:flex;align-items:baseline;gap:14px;font-size:12.5px;letter-spacing:3px;color:#b1502f;font-weight:700">
+      <span>MADRID · ESPAÑA</span><span style="color:#6b6152;letter-spacing:1px;font-weight:400">生活与玩乐 · 中文指南</span>
+    </div>
+    <h1 style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(42px,6vw,76px);line-height:1.12;margin:14px 0 18px">马德里生活玩乐指南</h1>
+    <p style="max-width:640px;font-size:15.5px;line-height:1.9;color:#6b6152;margin:0 0 34px">公共交通怎么坐、驾照怎么考、周末去哪儿——从马德里周边小镇到全西班牙的城市与山野徒步，点开地图上的标记即可查看攻略、图集与 GPX 路线。</p>
+    <div style="width:100%;aspect-ratio:21/8;position:relative;border-radius:6px;overflow:hidden;background:#ece5d8;border:1px solid rgba(36,29,18,.12)">
+      <sc-if value="{{ heroHas }}" hint-placeholder-val="{{ true }}">
+        <img src="{{ heroPhoto }}" alt="马德里全景" style="width:100%;height:100%;object-fit:cover;display:block">
+      </sc-if>
+      <sc-if value="{{ heroEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-size:13.5px;line-height:1.8;color:#6b6152">{{ heroHint }}</div>
+      </sc-if>
+    </div>
+  </header>
+
+  <!-- ============ 01 TRANSPORT ============ -->
+  <section id="sec-transport" style="max-width:1180px;margin:0 auto;padding:70px 28px 20px;scroll-margin-top:70px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid #241d12;padding-bottom:14px;margin-bottom:34px">
+      <span style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:15px;color:#b1502f">01</span>
+      <h2 style="font-family:'Noto Serif SC',serif;font-weight:700;font-size:34px;margin:0">马德里公共交通</h2>
+      <span style="font-size:13px;color:#6b6152;letter-spacing:2px">TRANSPORTE PÚBLICO</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px">
+      <div style="background:#fffdf8;border:1px solid rgba(36,29,18,.12);border-radius:6px;padding:24px 24px 20px">
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:19px;margin:0 0 2px">交通卡与月票</h3>
+        <div style="font-size:12px;color:#b1502f;letter-spacing:1.5px;margin-bottom:12px">TARJETA MULTI · ABONO</div>
+        <ul style="margin:0;padding-left:18px;font-size:13.8px;line-height:2;color:#42392b">
+          <li>红色 Multi 卡（€2.5）可充10次票，多人可共用</li>
+          <li>常住办个人 TTP 卡，30天 Abono 无限次乘坐</li>
+          <li>26岁以下 Abono Joven 约 €8/月，全区通用，极划算</li>
+          <li>价格以 CRTM 官网为准，充值可用官方 App 手机 NFC</li>
+        </ul>
+      </div>
+      <div style="background:#fffdf8;border:1px solid rgba(36,29,18,.12);border-radius:6px;padding:24px 24px 20px">
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:19px;margin:0 0 2px">地铁</h3>
+        <div style="font-size:12px;color:#b1502f;letter-spacing:1.5px;margin-bottom:12px">METRO DE MADRID</div>
+        <ul style="margin:0;padding-left:18px;font-size:13.8px;line-height:2;color:#42392b">
+          <li>运营约 6:00–1:30，12条线覆盖全城，比开车快</li>
+          <li>机场 8 号线进出需 €3 机场附加费</li>
+          <li>换乘看颜色和终点站方向，站内指示清晰</li>
+          <li>早晚高峰 1/6/10 号线很挤，看好随身物品</li>
+        </ul>
+      </div>
+      <div style="background:#fffdf8;border:1px solid rgba(36,29,18,.12);border-radius:6px;padding:24px 24px 20px">
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:19px;margin:0 0 2px">近郊铁路</h3>
+        <div style="font-size:12px;color:#b1502f;letter-spacing:1.5px;margin-bottom:12px">CERCANÍAS RENFE</div>
+        <ul style="margin:0;padding-left:18px;font-size:13.8px;line-height:2;color:#42392b">
+          <li>C 字头线路通往周边卫星城与小镇，Abono 覆盖对应区</li>
+          <li>El Escorial、Aranjuez、Alcalá 均可直达，周末游神器</li>
+          <li>Atocha / Chamartín 双枢纽，注意看站台屏幕</li>
+          <li>持 AVE 高铁票可免费换乘 Cercanías（Combinado Cercanías）</li>
+        </ul>
+      </div>
+      <div style="background:#fffdf8;border:1px solid rgba(36,29,18,.12);border-radius:6px;padding:24px 24px 20px">
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:19px;margin:0 0 2px">公交与夜班车</h3>
+        <div style="font-size:12px;color:#b1502f;letter-spacing:1.5px;margin-bottom:12px">EMT · BÚHO</div>
+        <ul style="margin:0;padding-left:18px;font-size:13.8px;line-height:2;color:#42392b">
+          <li>蓝色 EMT 公交与地铁共用交通卡</li>
+          <li>深夜有 N 字头「猫头鹰」夜班车，从 Cibeles 广场发车</li>
+          <li>绿色城际巴士开往周边城镇（Moncloa / Plaza Elíptica 等枢纽）</li>
+          <li>上车需招手示意，下车提前按铃</li>
+        </ul>
+      </div>
+      <div style="background:#fffdf8;border:1px solid rgba(36,29,18,.12);border-radius:6px;padding:24px 24px 20px">
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:19px;margin:0 0 2px">共享单车</h3>
+        <div style="font-size:12px;color:#b1502f;letter-spacing:1.5px;margin-bottom:12px">BICIMAD</div>
+        <ul style="margin:0;padding-left:18px;font-size:13.8px;line-height:2;color:#42392b">
+          <li>市政电助力单车，App 扫码即走</li>
+          <li>丽池公园、马德里河步道 Madrid Río 骑行最舒服</li>
+          <li>市中心坡多，电助力很有必要</li>
+          <li>注意单车道标线，人行道骑行会被罚</li>
+        </ul>
+      </div>
+      <div style="background:#241d12;color:#f6f1e8;border-radius:6px;padding:24px 24px 20px">
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:19px;margin:0 0 2px;color:#f6f1e8">实用小贴士</h3>
+        <div style="font-size:12px;color:#e0a184;letter-spacing:1.5px;margin-bottom:12px">TIPS</div>
+        <ul style="margin:0;padding-left:18px;font-size:13.8px;line-height:2;color:rgba(246,241,232,.85)">
+          <li>导航用 Google Maps / Moovit，CRTM App 查月票余额</li>
+          <li>周日与节假日班次骤减，出行先查末班车</li>
+          <li>罢工（huelga）常有最低服务，提前看新闻</li>
+          <li>出租车/网约车：Free Now、Uber、Cabify 都可用</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 LICENSE ============ -->
+  <section id="sec-license" style="max-width:1180px;margin:0 auto;padding:70px 28px 20px;scroll-margin-top:70px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid #241d12;padding-bottom:14px;margin-bottom:30px">
+      <span style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:15px;color:#b1502f">02</span>
+      <h2 style="font-family:'Noto Serif SC',serif;font-weight:700;font-size:34px;margin:0">在马德里考驾照</h2>
+      <span style="font-size:13px;color:#6b6152;letter-spacing:2px">CARNET DE CONDUCIR</span>
+    </div>
+    <div style="background:#f0e6d6;border:1px solid rgba(177,80,47,.35);border-radius:6px;padding:16px 20px;margin-bottom:36px;font-size:13.8px;line-height:1.9;color:#42392b">
+      <strong style="color:#b1502f">先看这条：</strong>中国驾照与西班牙没有互认换领协议，取得居留后需要重新报考。理论考试官方语言可选英语（无中文），不少华人驾校提供中文教材与辅导。总预算约 €600–1200，周期 2–6 个月。
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;position:relative">
+      <div style="padding:0 22px 10px 0;border-top:3px solid #b1502f;padding-top:16px">
+        <div style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:13px;color:#b1502f;margin-bottom:8px">第 1 步</div>
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:17.5px;margin:0 0 2px">选驾校报名</h3>
+        <div style="font-size:11.5px;color:#6b6152;letter-spacing:1px;margin-bottom:10px">AUTOESCUELA · €100–300</div>
+        <ul style="margin:0;padding-left:16px;font-size:13px;line-height:1.9;color:#42392b">
+          <li>比较报名费包含的课时数</li>
+          <li>马德里有华人驾校可中文讲理论</li>
+          <li>带 NIE/TIE 与照片办理</li>
+        </ul>
+      </div>
+      <div style="padding:0 22px 10px 0;border-top:3px solid #b1502f;padding-top:16px">
+        <div style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:13px;color:#b1502f;margin-bottom:8px">第 2 步</div>
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:17.5px;margin:0 0 2px">体检报告</h3>
+        <div style="font-size:11.5px;color:#6b6152;letter-spacing:1px;margin-bottom:10px">PSICOTÉCNICO · €40–60</div>
+        <ul style="margin:0;padding-left:16px;font-size:13px;line-height:1.9;color:#42392b">
+          <li>任意认证体检中心即可</li>
+          <li>视力+简单手眼协调测试</li>
+          <li>当场出报告，直接传给驾校</li>
+        </ul>
+      </div>
+      <div style="padding:0 22px 10px 0;border-top:3px solid #b1502f;padding-top:16px">
+        <div style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:13px;color:#b1502f;margin-bottom:8px">第 3 步</div>
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:17.5px;margin:0 0 2px">理论考试</h3>
+        <div style="font-size:11.5px;color:#6b6152;letter-spacing:1px;margin-bottom:10px">EXAMEN TEÓRICO · DGT</div>
+        <ul style="margin:0;padding-left:16px;font-size:13px;line-height:1.9;color:#42392b">
+          <li>30 题，错 3 题以内合格</li>
+          <li>可选英语作答</li>
+          <li>用 TodoTest / Practicatest 刷题库</li>
+        </ul>
+      </div>
+      <div style="padding:0 22px 10px 0;border-top:3px solid #b1502f;padding-top:16px">
+        <div style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:13px;color:#b1502f;margin-bottom:8px">第 4 步</div>
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:17.5px;margin:0 0 2px">路考</h3>
+        <div style="font-size:11.5px;color:#6b6152;letter-spacing:1px;margin-bottom:10px">EXAMEN PRÁCTICO · 约25分钟</div>
+        <ul style="margin:0;padding-left:16px;font-size:13px;line-height:1.9;color:#42392b">
+          <li>驾校车+教练陪同，考官后座</li>
+          <li>马德里考位紧，预约常排 1–2 个月</li>
+          <li>平均 2–3 次通过很正常，别灰心</li>
+        </ul>
+      </div>
+      <div style="padding:0 0 10px 0;border-top:3px solid #b1502f;padding-top:16px">
+        <div style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:13px;color:#b1502f;margin-bottom:8px">第 5 步</div>
+        <h3 style="font-family:'Noto Serif SC',serif;font-size:17.5px;margin:0 0 2px">领取驾照</h3>
+        <div style="font-size:11.5px;color:#6b6152;letter-spacing:1px;margin-bottom:10px">PERMISO · 邮寄1–2个月</div>
+        <ul style="margin:0;padding-left:16px;font-size:13px;line-height:1.9;color:#42392b">
+          <li>合格当场发临时许可，即可上路</li>
+          <li>新手第一年贴绿色「L」标</li>
+          <li>新手酒精限值更严（0.1mg/L）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 MAP ============ -->
+  <section id="sec-map" style="max-width:1180px;margin:0 auto;padding:70px 28px 20px;scroll-margin-top:70px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid #241d12;padding-bottom:14px;margin-bottom:16px">
+      <span style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:15px;color:#b1502f">03</span>
+      <h2 style="font-family:'Noto Serif SC',serif;font-weight:700;font-size:34px;margin:0">城镇 · 城市 · 徒步地图</h2>
+      <span style="font-size:13px;color:#6b6152;letter-spacing:2px">PUEBLOS · CIUDADES · SENDERISMO</span>
+    </div>
+    <p style="font-size:13.5px;color:#6b6152;margin:0 0 18px;line-height:1.8">点击地图标记或下方名录查看攻略与图集；徒步路线附 Mapy.cz GPX 链接。加那利群岛在西南方向，<span onClick="{{ flyCanary }}" style="color:#b1502f;cursor:pointer;font-weight:500;text-decoration:underline">点此飞往特内里费 →</span></p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+        <button onClick="{{ f.onClick }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.fg }};border-radius:999px;padding:7px 15px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Noto Sans SC',sans-serif;display:flex;align-items:center;gap:7px">
+          <span style="width:9px;height:9px;border-radius:50%;background:{{ f.dot }};display:inline-block"></span>{{ f.label }}
+        </button>
+      </sc-for>
+    </div>
+
+    <div ref="{{ mapRef }}" style="width:100%;height:{{ mapH }}px;border-radius:6px;border:1px solid rgba(36,29,18,.18);overflow:hidden;position:relative;z-index:1;background:#ece5d8"></div>
+
+    <!-- detail panel -->
+    <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:22px;background:#fffdf8;border:1px solid rgba(36,29,18,.14);border-radius:6px;padding:30px;display:grid;grid-template-columns:1fr 3fr;gap:34px" data-screen-label="景点详情">
+        <div>
+          <div style="display:inline-flex;align-items:center;gap:8px;background:{{ selCatColor }};color:#fff;border-radius:999px;padding:4px 13px;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:14px">{{ selCatLabel }}</div>
+          <h3 style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:34px;margin:0;line-height:1.2">{{ selZh }}</h3>
+          <div style="font-size:14px;color:#6b6152;letter-spacing:1.5px;margin:4px 0 20px">{{ selEs }}</div>
+          <div style="background:#f0e6d6;border-radius:6px;padding:13px 16px;font-size:13.5px;line-height:1.8;color:#42392b;margin-bottom:20px">
+            <strong style="color:#b1502f;font-size:12px;letter-spacing:1.5px;display:block;margin-bottom:3px">怎么去 · CÓMO LLEGAR</strong>{{ selGo }}
+          </div>
+          <div style="font-size:12px;letter-spacing:2px;color:#b1502f;font-weight:700;margin-bottom:8px">亮点与贴士 · TIPS</div>
+          <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;line-height:2.1;color:#42392b">
+            <sc-for list="{{ selTips }}" as="t" hint-placeholder-count="4">
+              <li>{{ t.text }}</li>
+            </sc-for>
+          </ol>
+          <sc-if value="{{ selHasGpx }}" hint-placeholder-val="{{ false }}">
+            <a href="{{ selGpx }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:9px;background:#2e6f6a;color:#fff;border-radius:6px;padding:11px 20px;font-size:14px;font-weight:700">
+              <span style="width:8px;height:8px;background:#fff;border-radius:50%;display:inline-block"></span>Mapy.cz 徒步路线 / GPX ↗
+            </a>
+          </sc-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;align-self:start">
+          <div style="width:100%;height:620px;position:relative;border-radius:5px;overflow:hidden;background:#241d12;border:1px solid rgba(36,29,18,.12)">
+            <sc-if value="{{ selHasPhotos }}" hint-placeholder-val="{{ true }}">
+              <img src="{{ selPhoto }}" alt="{{ selZh }}" style="width:100%;height:100%;object-fit:contain;display:block">
+            </sc-if>
+            <sc-if value="{{ selNoPhotos }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;font-size:13px;line-height:1.8;color:#6b6152;background:#ece5d8">{{ galleryPh }}</div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ selHasPhotos }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+              <button onClick="{{ prevPhoto }}" style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(36,29,18,.3);background:#fffdf8;color:#241d12;font-size:16px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;line-height:1">←</button>
+              <span style="font-size:12.5px;letter-spacing:2px;color:#6b6152;font-variant-numeric:tabular-nums">{{ galleryPos }}</span>
+              <button onClick="{{ nextPhoto }}" style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(36,29,18,.3);background:#fffdf8;color:#241d12;font-size:16px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;line-height:1">→</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- directory -->
+    <div style="margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;letter-spacing:1.5px;color:#241d12;border-bottom:1px solid rgba(36,29,18,.15);padding-bottom:8px;margin-bottom:10px">
+            <span style="width:10px;height:10px;border-radius:50%;background:{{ g.color }};display:inline-block"></span>{{ g.label }}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="5">
+              <button onClick="{{ it.onClick }}" style="border:1px solid {{ it.border }};background:{{ it.bg }};color:{{ it.fg }};border-radius:5px;padding:5px 11px;font-size:12.8px;cursor:pointer;font-family:'Noto Sans SC',sans-serif">{{ it.zh }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ============ 04 HERITAGE ============ -->
+  <section id="sec-heritage" style="max-width:1180px;margin:0 auto;padding:70px 28px 40px;scroll-margin-top:70px">
+    <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid #241d12;padding-bottom:14px;margin-bottom:10px">
+      <span style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:15px;color:#b1502f">04</span>
+      <h2 style="font-family:'Noto Serif SC',serif;font-weight:700;font-size:34px;margin:0">西班牙文化遗产推荐</h2>
+      <span style="font-size:13px;color:#6b6152;letter-spacing:2px">PATRIMONIO DE LA HUMANIDAD</span>
+    </div>
+    <p style="font-size:13.5px;color:#6b6152;margin:0 0 26px;line-height:1.8">西班牙拥有全球第五多的世界遗产。以下精选 33 项文化与自然遗产，标「地图」的可在上方地图直接查看攻略。</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:0 44px">
+      <sc-for list="{{ heritage }}" as="h" hint-placeholder-count="8">
+        <div style="display:flex;gap:14px;padding:15px 0;border-bottom:1px solid rgba(36,29,18,.12);align-items:baseline">
+          <span style="font-family:'Noto Serif SC',serif;font-weight:900;font-size:12px;color:#b1502f;min-width:34px">{{ h.year }}</span>
+          <div style="flex:1">
+            <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+              <span style="font-family:'Noto Serif SC',serif;font-weight:700;font-size:16.5px">{{ h.zh }}</span>
+              <span style="font-size:11.5px;color:#6b6152;letter-spacing:.5px">{{ h.es }}</span>
+              <sc-if value="{{ h.onMap }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:10.5px;font-weight:700;color:#2e6f6a;border:1px solid #2e6f6a;border-radius:3px;padding:1px 6px;letter-spacing:1px">地图</span>
+              </sc-if>
+            </div>
+            <div style="font-size:12.8px;color:#6b6152;line-height:1.7;margin-top:3px">{{ h.note }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid rgba(36,29,18,.12);margin-top:30px">
+    <div style="max-width:1180px;margin:0 auto;padding:26px 28px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:#6b6152">
+      <span style="font-family:'Noto Serif SC',serif;font-weight:700;color:#241d12">馬德里 · 生活玩乐指南</span>
+      <span>票价、班次与开放时间可能变动，出行前请以官方信息为准 · Hecho con cariño en Madrid</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;mapStyle&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;street&quot;, &quot;topo&quot;], &quot;default&quot;: &quot;street&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;地图&quot;}, &quot;mapHeight&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 560, &quot;min&quot;: 420, &quot;max&quot;: 760, &quot;step&quot;: 20, &quot;unit&quot;: &quot;px&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;地图&quot;}}">
+class Component extends DCLogic {
+  state = { selId: 'toledo', filter: 'all', photoIdx: 0, photos: {}, probing: {} };
+  // Safety cap on sequential probing — effectively "unlimited" for a gallery
+  // while preventing an endless request loop. Real limit is how many
+  // ./pic/{prefix}/{n}.jpg files actually exist (numbering starts at 1, no gaps).
+  MAX_PHOTOS = 50;
+
+  CATS = {
+    town:     { label: '马德里周边小镇', color: '#b1502f' },
+    city:     { label: '西班牙城市',     color: '#2e6f6a' },
+    hikeNear: { label: '马德里周边徒步', color: '#6f7d3c' },
+    hikeFar:  { label: '西班牙徒步',     color: '#7d4f74' }
+  };
+
+  SPOTS = [
+    // ---- towns ----
+    { id:'toledo', cat:'town', zh:'托莱多', es:'Toledo', lat:39.8628, lng:-4.0273,
+      go:'Atocha 出发 Avant 高铁约 33 分钟；或 Plaza Elíptica 乘 ALSA 巴士约 1 小时，班次密。',
+      tips:['三种文化（基督教/伊斯兰/犹太）交融的古城，经典一日游','登对岸 Mirador del Valle 看全景（71路公交或观光小火车）','大教堂等多景点可买 Pulsera Turística 手环联票','特产杏仁糖 mazapán；周末人多尽量赶早'] },
+    { id:'segovia', cat:'town', zh:'塞哥维亚', es:'Segovia', lat:40.9481, lng:-4.1184,
+      go:'Chamartín 乘 Avant 约 27 分钟（车站离老城远，接驳 11 路）；或 Moncloa 巴士约 1h15 直达老城。',
+      tips:['罗马水道桥保存近两千年，必看','Alcázar 城堡是白雪公主城堡的原型之一','名菜烤乳猪 cochinillo（Cándido、José María 老店）','时间充裕可顺访 La Granja 王宫花园'] },
+    { id:'escorial', cat:'town', zh:'埃斯科里亚尔', es:'El Escorial', lat:40.5892, lng:-4.1477,
+      go:'Cercanías C3/C8 约 1 小时（B2 区，月票可达）；或 Moncloa 661/664 巴士。',
+      tips:['腓力二世的修道院-王宫综合体，皇家图书馆惊艳','La Herrería 林间步道回望修道院全景','秋季山毛榉林变金黄，适合轻徒步','周一闭馆，注意安排'] },
+    { id:'aranjuez', cat:'town', zh:'阿兰胡埃斯', es:'Aranjuez', lat:40.0311, lng:-3.6023,
+      go:'Cercanías C3 约 45 分钟（B3 区）；春秋周末有复古蒸汽「草莓火车」。',
+      tips:['王宫+王子花园，塔霍河畔的皇家园林','春季芦笋与草莓是招牌时令','花园免费开放，适合野餐骑行','王宫周一闭馆'] },
+    { id:'chinchon', cat:'town', zh:'钦琼', es:'Chinchón', lat:40.1399, lng:-3.4237,
+      go:'Conde de Casal 乘 337 巴士约 50 分钟（无火车直达）。',
+      tips:['中世纪木结构环形大广场 Plaza Mayor','特产大蒜与茴香酒 anís','广场边阳台餐厅吃烤羊/烤肉','可与阿兰胡埃斯拼成一日'] },
+    // ---- cities ----
+    { id:'salamanca', cat:'city', zh:'萨拉曼卡', es:'Salamanca', lat:40.9701, lng:-5.6635,
+      go:'Chamartín 乘 Avant/Alvia 约 1h40。',
+      tips:['金色砂岩老城，日落时的 Plaza Mayor 最美','大学正门浮雕上找青蛙（找到会有好运）','新大教堂外墙找「宇航员」彩蛋','贝壳之家 Casa de las Conchas 免费参观'] },
+    { id:'avila', cat:'town', zh:'阿维拉', es:'Ávila', lat:40.6565, lng:-4.6818,
+      go:'Chamartín 火车约 1.5 小时；巴士自 Estación Sur。',
+      tips:['欧洲保存最完整的中世纪城墙，可上墙步行','Cuatro Postes 观景点拍城墙全景（日落/夜景）','特产蛋黄甜点 yemas de Santa Teresa','阿维拉牛排 chuletón 分量感人'] },
+    { id:'caceres', cat:'city', zh:'卡塞雷斯', es:'Cáceres', lat:39.4753, lng:-6.3724,
+      go:'Atocha 火车约 3 小时；或 ALSA 巴士。',
+      tips:['整座老城是世界遗产，《权力的游戏》取景地','傍晚登 Bujaco 塔俯瞰石头城','老城巷子随便迷路都是风景','埃斯特雷马杜拉火腿产区，放开吃'] },
+    { id:'cordoba', cat:'city', zh:'科尔多瓦', es:'Córdoba', lat:37.8882, lng:-4.7794,
+      go:'Atocha 乘 AVE 约 1h50。',
+      tips:['清真寺-大教堂 Mezquita 是安达卢西亚必看','周一至周六 8:30–9:30 免费早场（人少）','5月庭院节 Patios，全城花墙','夏季 40°C+，避开正午出行'] },
+    { id:'sevilla', cat:'city', zh:'塞维利亚', es:'Sevilla', lat:37.3891, lng:-5.9845,
+      go:'Atocha 乘 AVE 约 2.5 小时。',
+      tips:['大教堂+吉拉尔达塔+王宫 Real Alcázar（务必提前订票）','西班牙广场傍晚光线最佳','Triana 区吃 tapas、看弗拉明戈','4月 Feria 春会全城盛装'] },
+    { id:'jaen', cat:'city', zh:'哈恩', es:'Jaén', lat:37.7796, lng:-3.7849,
+      go:'Atocha 火车约 4 小时；或巴士。',
+      tips:['世界橄榄油之都，油庄品鉴体验','山顶城堡 Parador 俯瞰油海','文艺复兴大教堂气势不输大城','可串联 Úbeda / Baeza 文艺复兴双城'] },
+    { id:'granada', cat:'city', zh:'格拉纳达', es:'Granada', lat:37.1773, lng:-3.5986,
+      go:'Atocha 乘 AVE 约 3h15。',
+      tips:['阿尔罕布拉宫需提前 1–2 个月订票（认准官网）','San Nicolás 观景台看雪山映衬下的宫殿日落','点饮料送免费 tapas 的传统仍在','Albaicín 与 Sacromonte 洞穴弗拉明戈'] },
+    { id:'malaga', cat:'city', zh:'马拉加', es:'Málaga', lat:36.7213, lng:-4.4214,
+      go:'Atocha 乘 AVE 约 2.5 小时。',
+      tips:['毕加索故乡：毕加索博物馆+蓬皮杜分馆','登 Gibralfaro 城堡看海港全景','海滩茅棚烤沙丁鱼串 espeto','老酒馆 El Pimpi 打卡甜酒'] },
+    { id:'nerja', cat:'city', zh:'内尔哈', es:'Nerja', lat:36.7448, lng:-3.8765,
+      go:'马拉加转 ALSA 沿海巴士约 1 小时。',
+      tips:['「欧洲阳台」Balcón de Europa 海景','内尔哈溶洞的巨型石柱','Burriana 海滩+崖边步道 Los Acantilados','与弗里希利亚纳同日刚好'] },
+    { id:'frigiliana', cat:'city', zh:'弗里希利亚纳', es:'Frigiliana', lat:36.7899, lng:-3.8951,
+      go:'内尔哈转乡村巴士约 15 分钟。',
+      tips:['被评为安达卢西亚最美白色山村','蓝色门窗+鲜花小巷，怎么拍都好看','特产甘蔗蜜 miel de caña','爬到村顶俯瞰地中海'] },
+    { id:'benidorm', cat:'city', zh:'贝尼多姆', es:'Benidorm', lat:38.5411, lng:-0.1225,
+      go:'高铁至 Alicante，转 TRAM 轻轨或巴士。',
+      tips:['地中海「小曼哈顿」摩天楼天际线','Levante 热闹、Poniente 安静，双海滩各取所需','冬季依然温暖，欧洲人过冬胜地','Balcón del Mediterráneo 观景台'] },
+    { id:'calp', cat:'city', zh:'卡尔佩', es:'Calp', lat:38.6446, lng:0.0446,
+      go:'Alicante 转 TRAM L9 沿海风景线。',
+      tips:['巨岩 Peñón de Ifach 登顶步道（免费但需预约）','盐湖 Las Salinas 常见火烈鸟','老渔港的海鲜饭名店','岩顶俯瞰整个海湾，值回票价'] },
+    { id:'valencia', cat:'city', zh:'瓦伦西亚', es:'València', lat:39.4699, lng:-0.3763,
+      go:'Atocha 乘 AVE 约 1h50。',
+      tips:['艺术与科学城未来主义建筑群','海鲜饭 paella 发源地——按当地习惯中午吃','丝绸交易所（世遗）+中央市场','3月法雅节 Las Fallas 烧偶狂欢'] },
+    { id:'pamplona', cat:'city', zh:'潘普洛纳', es:'Pamplona', lat:42.8125, lng:-1.6458,
+      go:'Atocha 高铁约 3 小时。',
+      tips:['7月6–14日圣费尔明奔牛节','老城 Estafeta 街即奔牛路线','纳瓦拉 pintxos 与海明威路线','城堡公园 Ciudadela 散步'] },
+    { id:'sansebastian', cat:'city', zh:'圣塞巴斯蒂安', es:'San Sebastián / Donostia', lat:43.3183, lng:-1.9812,
+      go:'高铁+换乘约 5 小时；或飞机 1 小时。',
+      tips:['La Concha 常年入选欧洲最美城市海滩','老城 pintxos 酒吧巡游（每家只点招牌）','Monte Igueldo 百年木缆车观景','米其林密度全球顶级的美食之城'] },
+    { id:'bilbao', cat:'city', zh:'毕尔巴鄂', es:'Bilbao', lat:43.2630, lng:-2.9350,
+      go:'火车约 5 小时；或飞机 1 小时。',
+      tips:['古根海姆美术馆+蜘蛛与花狗','老城「七街」与 Ribera 市场觅食','Artxanda 缆车俯瞰河谷城市','顺访 Gaztelugatxe 龙石岛（需预约）'] },
+    { id:'lugo', cat:'city', zh:'卢戈', es:'Lugo', lat:43.0097, lng:-7.5568,
+      go:'火车或飞圣地亚哥后转巴士。',
+      tips:['全球唯一完整环绕老城的罗马城墙（世遗）','墙顶步道 2km 免费绕城一圈','加利西亚章鱼 pulpo á feira 必点','大教堂与老城酒馆区'] },
+    { id:'coruna', cat:'city', zh:'拉科鲁尼亚', es:'A Coruña', lat:43.3623, lng:-8.4115,
+      go:'火车约 4 小时；或飞机 1h10。',
+      tips:['海格力斯塔：仍在使用的最古老罗马灯塔','Orzán–Riazor 海滨步道吹大西洋的风','「玻璃之城」海滨长廊建筑','加利西亚海鲜市场级新鲜'] },
+    { id:'tenerife', cat:'city', zh:'特内里费', es:'Tenerife', lat:28.2916, lng:-16.6291,
+      go:'马德里直飞约 3 小时（加那利群岛）。',
+      tips:['泰德火山 3718m：缆车+登顶许可（提前申请）','世界顶级观星地，可报星空团','北部 Anaga 云雾森林徒步','全年 20°C+，冬季避寒首选'] },
+    { id:'cuenca', cat:'town', zh:'昆卡', es:'Cuenca', lat:40.0704, lng:-2.1374,
+      go:'Atocha 乘 AVE 约 55 分钟（Fernando Zóbel 站离老城远，需接驳巴士）；慢车直达老城更省钱。',
+      tips:['悬在峡谷崖壁上的「悬屋」Casas Colgadas','圣巴勃罗桥上拍悬屋全景','老城本身即世界遗产，适合一日游','抽象艺术博物馆就在悬屋里'] },
+    // ---- hiking near ----
+    { id:'guadarrama', cat:'hikeNear', zh:'瓜达拉马山脉 · 佩尼亚拉拉', es:'Sierra de Guadarrama · Peñalara', lat:40.8500, lng:-3.9576, gpx:'https://mapy.cz/turisticka?q=Pe%C3%B1alara',
+      go:'Chamartín 乘 Cercanías 至 Cercedilla，换 C-9 登山小火车到 Puerto de Cotos。',
+      tips:['马德里大区最高峰 Peñalara（2428m），环线约 12km','冰川湖 Laguna Grande 是经典打卡点','冬春有积雪，需冰爪与保暖','小火车班次少，去回都先查好时刻'] },
+    { id:'pedriza', cat:'hikeNear', zh:'拉佩德里萨', es:'La Pedriza', lat:40.7614, lng:-3.8894, gpx:'https://mapy.cz/turisticka?q=La%20Pedriza%20El%20Yelmo',
+      go:'Plaza de Castilla 乘 724 巴士至 Manzanares el Real，步行或打车至入口。',
+      tips:['欧洲最大花岗岩奇石地貌之一','经典线：El Yelmo 岩峰环线（约 4–5 小时）','夏季 Charcas 天然水潭可玩水','周末入园限流、停车场早满，务必赶早'] },
+    { id:'manzanares', cat:'hikeNear', zh:'曼萨纳雷斯-埃尔雷亚尔', es:'Manzanares el Real', lat:40.7264, lng:-3.8622, gpx:'https://mapy.cz/turisticka?q=Manzanares%20el%20Real',
+      go:'Plaza de Castilla 乘 724 巴士约 45 分钟。',
+      tips:['门多萨城堡：保存最好的中世纪城堡之一','Santillana 水库边野餐看山','La Pedriza 徒步的大本营小镇','城堡+短途步道适合亲子半日'] },
+    { id:'hayedo', cat:'hikeNear', zh:'蒙特霍山毛榉林', es:'Hayedo de Montejo', lat:41.1226, lng:-3.5017, gpx:'https://mapy.cz/turisticka?q=Hayedo%20de%20Montejo',
+      go:'自驾约 1.5 小时（Sierra del Rincón）；公共交通不便，建议拼车。',
+      tips:['欧洲最南端的山毛榉林之一（世遗）','免费但必须提前在官网预约向导团，秋季名额秒光','10–11 月金黄红叶是全年最佳','可顺访中世纪城墙小镇 Buitrago del Lozoya'] },
+    { id:'tiemblo', cat:'hikeNear', zh:'埃尔蒂恩布洛栗子林', es:'Castañar de El Tiemblo', lat:40.3480, lng:-4.5210, gpx:'https://mapy.cz/turisticka?q=Casta%C3%B1ar%20de%20El%20Tiemblo',
+      go:'自驾约 1.5 小时（阿维拉省）；秋季周末入口停车场收费且早满。',
+      tips:['秋天栗子林层林尽染，马德里人的赏秋胜地','看千年老栗树「El Abuelo」（爷爷树）','环线约 7km，坡缓适合全家','保护区内捡栗子有限制，注意告示'] },
+    { id:'patones', cat:'hikeNear', zh:'帕托内斯 · 奥利瓦水坝', es:'Patones · Pontón de la Oliva', lat:40.9088, lng:-3.4894, gpx:'https://mapy.cz/turisticka?q=Pont%C3%B3n%20de%20la%20Oliva',
+      go:'自驾约 1 小时（A-1 出口 Torrelaguna 方向）；坝下停车场免费但车位少。',
+      tips:['1858 年建的马德里第一座供水坝，如今已废弃，石砌坝体很壮观','沿 Canal de Isabel II 的「Rutas del Agua」步道走，平缓好走，标柱带二维码讲解','春天 3–4 月 Lozoya 河谷最绿；夏天晒且无遮荫','顺访黑板岩村 Patones de Arriba，午餐选择多'] },
+    // ---- hiking far ----
+    { id:'gaztelugatxe', cat:'hikeFar', zh:'龙蛇岛（加斯特鲁加切）', es:'San Juan de Gaztelugatxe', lat:43.4471, lng:-2.7856, gpx:'https://mapy.cz/turisticka?q=San%20Juan%20de%20Gaztelugatxe',
+      go:'自驾从毕尔巴鄂约 40 分钟（Bakio–Bermeo 沿海公路）；或从毕尔巴鄂搭 A3518 路巴士到 San Juan de Gaztelugatxe 站下。',
+      tips:['之字形石桥连到海中小岛，241 级石阶直上山顶 10 世纪隐修所','《权力的游戏》龙石岛取景地，故中文常称「龙蛇岛」','门票免费但必须官网提前预约时段（旺季提前一两周就满）','山顶敲钟三下许愿是当地传统','停车场到入口还要走 20 分钟下坡，回程全是上坡，穿好走的鞋','顺路可玩 Bakio 冲浪海滩、Bermeo 渔港；黄昏光线最好'] },
+    { id:'cares', cat:'hikeFar', zh:'卡雷斯峡谷线', es:'Ruta del Cares', lat:43.2565, lng:-4.8399, gpx:'https://mapy.cz/turisticka?q=Ruta%20del%20Cares',
+      go:'自驾约 4.5 小时至 Poncebos（欧罗巴山国家公园）；旺季停车紧张。',
+      tips:['「神之峡谷」悬崖栈道：Poncebos–Caín 单程 12km','落差小但全程无遮挡，带足水和防晒','旺季早 7 点前到才有车位','可住 Arenas de Cabrales 尝蓝纹奶酪'] },
+    { id:'covadonga', cat:'hikeFar', zh:'科瓦东加湖区', es:'Lagos de Covadonga', lat:43.2707, lng:-4.9884, gpx:'https://mapy.cz/turisticka?q=Lagos%20de%20Covadonga',
+      go:'自驾约 4.5 小时；旺季湖区交通管制，需在 Cangas de Onís 换乘班车。',
+      tips:['圣所+嵌在山洞里的礼拜堂','Enol 与 Ercina 两湖环线轻徒步','高山牧场常见野生岩羚与奶牛','山区天气多变，雨具常备'] },
+    { id:'picos', cat:'hikeFar', zh:'欧罗巴山国家公园 · 富恩特德', es:'Picos de Europa · Fuente Dé', lat:43.1478, lng:-4.8144, gpx:'https://mapy.cz/turisticka?q=Fuente%20D%C3%A9%20Mirador%20del%20Cable',
+      go:'自驾约 4.5 小时至 Potes 再上山谷（坎塔布里亚一侧）；无直达公共交通，建议租车。',
+      tips:['西班牙第一座国家公园，卡雷斯峡谷与科瓦东加湖区都在其中','Fuente Dé 缆车 4 分钟升 750m 到 1823m 观景台，旺季务必网上先订票','观景台出发走 Horcados Rojos 可近看「毕鲁峰」Naranjo de Bulnes（2519m）','另一亮点：Poncebos 搭欧洲最陡地下缆车进无路可达的 Bulnes 村','山谷小镇 Potes 适合住一晚，尝 cocido lebaniego 与 orujo 酒'] },
+    { id:'nevada', cat:'hikeFar', zh:'内华达山脉', es:'Sierra Nevada', lat:37.0539, lng:-3.3110, gpx:'https://mapy.cz/turisticka?q=Mulhac%C3%A9n',
+      go:'AVE 至格拉纳达转巴士；或自驾约 4.5 小时。',
+      tips:['夏季可登伊比利亚半岛最高峰 Mulhacén（3479m）','冬季是欧洲最南端滑雪场','海拔高，注意防晒与补水','可与格拉纳达拼成 2–3 日行程'] },
+    { id:'ordesa', cat:'hikeFar', zh:'奥德萨-佩尔迪多山', es:'Ordesa y Monte Perdido', lat:42.6416, lng:-0.0561, gpx:'https://mapy.cz/turisticka?q=Cola%20de%20Caballo%20Ordesa',
+      go:'自驾约 5 小时至 Torla；旺季需换乘园区班车进谷。',
+      tips:['经典线：马尾瀑布 Cola de Caballo 往返约 18km','比利牛斯的「小科罗拉多」峡谷（世遗）','秋季山毛榉林金黄，摄影最佳季','山区午后易雷雨，务必早出发'] },
+    { id:'bielsa', cat:'hikeFar', zh:'别尔萨 · 皮内塔山谷', es:'Parador de Bielsa · Valle de Pineta', lat:42.6790, lng:0.0740, gpx:'https://mapy.cz/turisticka?q=Llanos%20de%20La%20Larri',
+      go:'自驾约 5.5 小时，山谷尽头即 Parador 国营酒店。',
+      tips:['住 Parador 直面 Monte Perdido 北壁冰川','轻松线：La Larri 高山草甸环线','硬核线：Marboré 冰川湖（爬升 1300m）','秋色与春季瀑布群都极美'] }
+  ];
+
+  HERITAGE = [
+    { year:'1984', zh:'阿尔罕布拉宫与阿尔拜辛区', es:'Granada', note:'纳斯里王朝的巅峰之作，西班牙访问量第一的古迹。', onMap:true },
+    { year:'1984', zh:'科尔多瓦清真寺-大教堂与老城', es:'Córdoba', note:'八百根红白双色马蹄拱柱林，独一无二。', onMap:true },
+    { year:'1986', zh:'托莱多古城', es:'Toledo', note:'基督教、伊斯兰与犹太文化层叠的「帝国之城」。', onMap:true },
+    { year:'1985', zh:'塞哥维亚老城与罗马水道桥', es:'Segovia', note:'不用一滴砂浆的两千年工程奇迹。', onMap:true },
+    { year:'1984', zh:'埃斯科里亚尔修道院', es:'San Lorenzo de El Escorial', note:'腓力二世的「石头王冠」，皇家图书馆穹顶壁画必看。', onMap:true },
+    { year:'2001', zh:'阿兰胡埃斯文化景观', es:'Aranjuez', note:'河流、王宫与园林共同构成的皇家景观。', onMap:true },
+    { year:'1988', zh:'萨拉曼卡老城', es:'Salamanca', note:'欧洲最古老大学之一所在的金色之城。', onMap:true },
+    { year:'1985', zh:'阿维拉老城与城墙', es:'Ávila', note:'88 座塔楼环绕的中世纪要塞之城。', onMap:true },
+    { year:'1986', zh:'卡塞雷斯老城', es:'Cáceres', note:'保存完好的中世纪与文艺复兴石城。', onMap:true },
+    { year:'1987', zh:'塞维利亚大教堂、王宫与档案馆', es:'Sevilla', note:'世界最大哥特教堂+摩尔式王宫的组合。', onMap:true },
+    { year:'2000', zh:'卢戈罗马城墙', es:'Lugo', note:'全球唯一完整环绕老城的罗马城墙。', onMap:true },
+    { year:'2009', zh:'海格力斯塔', es:'A Coruña', note:'仍在服役的最古老罗马灯塔。', onMap:true },
+    { year:'2007', zh:'泰德国家公园', es:'Tenerife', note:'西班牙最高峰与月球般的火山地貌。', onMap:true },
+    { year:'1997', zh:'比利牛斯-珀杜山', es:'Ordesa y Monte Perdido', note:'横跨西法两国的高山峡谷景观。', onMap:true },
+    { year:'1993', zh:'圣地亚哥朝圣之路', es:'Camino de Santiago', note:'千年朝圣路网，法国之路最经典。', onMap:false },
+    { year:'1996', zh:'昆卡古城', es:'Cuenca', note:'悬在峡谷崖壁上的「悬屋」之城。', onMap:true },
+    { year:'1984', zh:'高迪建筑作品群', es:'Barcelona', note:'圣家堂、米拉之家等现代主义杰作。', onMap:false },
+    { year:'2021', zh:'普拉多大道与丽池公园', es:'Madrid', note:'就在家门口的「光之景观」：博物馆大道+城市绿肺。', onMap:false },
+    { year:'1998', zh:'埃纳雷斯堡大学与老城', es:'Alcalá de Henares', note:'塞万提斯故乡，Cercanías 可达的世遗大学城。', onMap:false },
+    { year:'1985', zh:'圣地亚哥-德孔波斯特拉老城', es:'Santiago de Compostela', note:'千年朝圣之路的终点大教堂。', onMap:false },
+    { year:'1985', zh:'阿尔塔米拉洞穴岩画', es:'Cantabria', note:'「史前的西斯廷」——两万年前的野牛壁画。', onMap:false },
+    { year:'1984', zh:'布尔戈斯大教堂', es:'Burgos', note:'西班牙哥特建筑的巅峰，熙德长眠于此。', onMap:false },
+    { year:'1985', zh:'奥维耶多与阿斯图里亚斯王国教堂群', es:'Oviedo', note:'比罗曼式更早的前罗曼式珍品。', onMap:false },
+    { year:'1993', zh:'梅里达考古遗址群', es:'Mérida', note:'罗马剧场保存完好，至今夏季仍上演戏剧。', onMap:false },
+    { year:'1993', zh:'瓜达卢佩皇家修道院', es:'Guadalupe', note:'哥特-穆德哈尔混血修道院，朝圣与艺术宝库。', onMap:false },
+    { year:'1997', zh:'拉斯梅杜拉斯', es:'Las Médulas', note:'罗马金矿遗留的红色尖峰地貌，栗林环绕。', onMap:false },
+    { year:'2000', zh:'塔拉戈纳考古遗址群', es:'Tarragona', note:'面朝地中海的罗马圆形剧场。', onMap:false },
+    { year:'2016', zh:'安特克拉支石墓', es:'Antequera', note:'五千年前的巨石墓室，配「人脸山」奇观。', onMap:false },
+    { year:'2006', zh:'比斯开桥', es:'Portugalete · Bilbao', note:'世界最古老的运渡桥，毕尔巴鄂顺访。', onMap:false }
+  ];
+
+  mapRef = React.createRef();
+
+  componentDidMount() {
+    this._tryInit();
+    this._probe('hero');
+    this._probe(this.state.selId);
+  }
+
+  // Discover how many photos exist for a spot by loading ./pic/{prefix}/1.jpg,
+  // ./pic/{prefix}/2.jpg, … until one 404s. A browser page can't list a folder,
+  // so this sequential probe is what makes "count = number of files" work.
+  // Results are cached in state.photos[prefix]; each prefix is probed once.
+  _probe(prefix) {
+    if (!prefix) return;
+    const done = this.state.photos[prefix];
+    const busy = this.state.probing && this.state.probing[prefix];
+    if (done || busy) return;
+    this.setState(s => ({ probing: { ...s.probing, [prefix]: true } }));
+    (async () => {
+      const urls = [];
+      for (let n = 1; n <= this.MAX_PHOTOS; n++) {
+        const url = './pic/' + prefix + '/' + n + '.jpg';
+        if (!(await this._probeOne(url))) break;
+        urls.push(url);
+      }
+      this.setState(s => ({
+        photos: { ...s.photos, [prefix]: urls },
+        probing: { ...s.probing, [prefix]: false }
+      }));
+    })();
+  }
+
+  _probeOne(url) {
+    return new Promise(res => {
+      const img = new Image();
+      img.onload = () => res(true);
+      img.onerror = () => res(false);
+      img.src = url;
+    });
+  }
+
+  _tryInit() {
+    if (this._map) return;
+    if (!window.L || !this.mapRef.current) { this._t = setTimeout(() => this._tryInit(), 150); return; }
+    const L = window.L;
+    const map = L.map(this.mapRef.current, { scrollWheelZoom: false, zoomSnap: 0.5 }).setView([40.1, -3.9], 6);
+    this._map = map;
+    this._tiles = null;
+    this._setTiles();
+    this._markers = {};
+    this.SPOTS.forEach(sp => {
+      const m = L.circleMarker([sp.lat, sp.lng], this._markerStyle(sp, false)).addTo(map);
+      m.bindTooltip(sp.zh + ' · ' + sp.es, { direction: 'top', offset: [0, -6] });
+      m.on('click', () => this.selectSpot(sp.id, false));
+      this._markers[sp.id] = m;
+    });
+    this._refreshMarkers();
+  }
+
+  _setTiles() {
+    const L = window.L, topo = (this.props.mapStyle ?? 'street') === 'topo';
+    if (this._tiles) this._map.removeLayer(this._tiles);
+    this._tiles = L.tileLayer(
+      topo ? 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png' : 'https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png',
+      { maxZoom: 17, attribution: topo ? '© OpenTopoMap © OpenStreetMap' : '© OpenStreetMap contributors' }
+    ).addTo(this._map);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!this._map) return;
+    if (prevProps.mapStyle !== this.props.mapStyle) this._setTiles();
+    if (prevProps.mapHeight !== this.props.mapHeight) setTimeout(() => this._map.invalidateSize(), 60);
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); if (this._map) this._map.remove(); }
+
+  _markerStyle(sp, selected) {
+    const dim = this.state && this.state.filter !== 'all' && this.state.filter !== sp.cat;
+    return {
+      radius: selected ? 10 : 7,
+      color: '#fffdf8', weight: selected ? 2.5 : 1.5,
+      fillColor: this.CATS[sp.cat].color,
+      fillOpacity: dim ? 0.12 : 0.92,
+      opacity: dim ? 0.15 : 1
+    };
+  }
+
+  _refreshMarkers() {
+    if (!this._markers || !this._map) return;
+    const L = window.L;
+    this.SPOTS.forEach(sp => {
+      if (!this._markers[sp.id]) {
+        const m = L.circleMarker([sp.lat, sp.lng], this._markerStyle(sp, false)).addTo(this._map);
+        m.bindTooltip(sp.zh + ' · ' + sp.es, { direction: 'top', offset: [0, -6] });
+        m.on('click', () => this.selectSpot(sp.id, false));
+        this._markers[sp.id] = m;
+      }
+      this._markers[sp.id].setStyle(this._markerStyle(sp, sp.id === this.state.selId));
+    });
+  }
+
+  selectSpot(id, fly) {
+    this._probe(id);
+    this.setState({ selId: id, photoIdx: 0 }, () => {
+      this._refreshMarkers();
+      if (this._map && fly) {
+        const sp = this.SPOTS.find(s => s.id === id);
+        this._map.flyTo([sp.lat, sp.lng], Math.max(this._map.getZoom(), sp.cat === 'town' || sp.cat.indexOf('hike') === 0 ? 8 : 6.5), { duration: 0.8 });
+      }
+    });
+  }
+
+  setFilter(key) { this.setState({ filter: key }, () => this._refreshMarkers()); }
+
+  renderVals() {
+    const sel = this.SPOTS.find(s => s.id === this.state.selId) || null;
+    const catOrder = ['town', 'city', 'hikeNear', 'hikeFar'];
+
+    const photos = this.state.photos || {};
+    const heroList = photos['hero'] || [];
+    const selList = sel ? (photos[sel.id] || []) : [];
+    const selCount = selList.length;
+    const selIdx = selCount ? (this.state.photoIdx % selCount) : 0;
+    const selProbing = !!(sel && this.state.probing && this.state.probing[sel.id]);
+
+    const filters = [{ key: 'all', label: '全部', color: '#241d12' }]
+      .concat(catOrder.map(k => ({ key: k, label: this.CATS[k].label, color: this.CATS[k].color })))
+      .map(f => {
+        const active = this.state.filter === f.key;
+        return {
+          label: f.label, dot: f.key === 'all' ? '#241d12' : f.color,
+          bg: active ? '#241d12' : '#fffdf8', fg: active ? '#f6f1e8' : '#241d12',
+          border: active ? '#241d12' : 'rgba(36,29,18,.25)',
+          onClick: () => this.setFilter(f.key)
+        };
+      });
+
+    const groups = catOrder.map(k => ({
+      label: this.CATS[k].label, color: this.CATS[k].color,
+      items: this.SPOTS.filter(s => s.cat === k).map(s => {
+        const active = s.id === this.state.selId;
+        return {
+          zh: s.zh,
+          bg: active ? this.CATS[k].color : '#fffdf8', fg: active ? '#fff' : '#42392b',
+          border: active ? this.CATS[k].color : 'rgba(36,29,18,.22)',
+          onClick: () => this.selectSpot(s.id, true)
+        };
+      })
+    }));
+
+    return {
+      mapRef: this.mapRef,
+      mapH: this.props.mapHeight ?? 560,
+      filters, groups,
+      hasSel: !!sel,
+      selZh: sel ? sel.zh : '', selEs: sel ? sel.es : '',
+      selGo: sel ? sel.go : '',
+      selCatLabel: sel ? this.CATS[sel.cat].label : '',
+      selCatColor: sel ? this.CATS[sel.cat].color : '#241d12',
+      selTips: sel ? sel.tips.map(t => ({ text: t })) : [],
+      selHasGpx: !!(sel && sel.gpx),
+      selGpx: sel && sel.gpx ? sel.gpx : '#',
+      selHasPhotos: selCount > 0,
+      selNoPhotos: selCount === 0,
+      selPhoto: selCount ? selList[selIdx] : '',
+      galleryPh: sel
+        ? (selProbing
+            ? '正在载入照片…'
+            : '把 ' + sel.zh + ' 的照片命名为 pic/' + sel.id + '/1.jpg、pic/' + sel.id + '/2.jpg… 即可自动显示')
+        : '',
+      galleryPos: selCount ? (selIdx + 1) + ' / ' + selCount : '0 / 0',
+      prevPhoto: () => { if (selCount) this.setState(s => ({ photoIdx: (s.photoIdx + selCount - 1) % selCount })); },
+      nextPhoto: () => { if (selCount) this.setState(s => ({ photoIdx: (s.photoIdx + 1) % selCount })); },
+      heroHas: heroList.length > 0,
+      heroEmpty: heroList.length === 0,
+      heroPhoto: heroList[0] || '',
+      heroHint: '把马德里全景照命名为 pic/hero/1.jpg 即可自动显示',
+      flyCanary: () => { if (this._map) this._map.flyTo([28.29, -16.63], 8, { duration: 1.2 }); },
+      heritage: this.HERITAGE
+    };
+  }
+}
+</script>
+</body>
+</html>
